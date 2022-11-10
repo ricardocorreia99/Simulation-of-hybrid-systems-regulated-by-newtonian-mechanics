@@ -68,16 +68,17 @@ object Parser extends RegexParsers {
   // Gramática para uma sequeência de programas
   // Podemos ter um basicprog seguido por ponto e virgula e por por outro basicprog, ou nada 
   lazy val seqP: Parser[Syntax] =
-    basicProg ~ opt(";" ~> seqP) ^^ {
+    basicProg ~ opt(seqP) ^^ {
       case p1 ~ Some(p2) => p1 ~ p2
       case p ~ None => p
     }
 
   /** Parser for a basic program: "skip", "while", "repeat", "if", "wait", or an atomic program (see below) */
 
-  // PARA QUE SERVE O SKIP?????
+   
+  // COLOCAR O SKIP COM NOTLIN
   lazy val basicProg: Parser[Syntax] =
-    "skip" ~> opt("for"~>realP) ^^ { //penso que o skip sirva para o programa estar sem fazer nada durante o tempo que o skip indica
+    "skip" ~> opt("for"~>realP)<~";" ^^ { //penso que o skip sirva para o programa estar sem fazer nada durante o tempo que o skip indica
       case None => skip
       case Some(real) => Atomic(Nil,DiffEqs(Nil,For(ValueNotLin(real)))) // Nil é uma lista vazia
     } |
@@ -91,7 +92,7 @@ object Parser extends RegexParsers {
     "if" ~> condP ~ "then" ~ blockP ~ "else" ~ blockP ^^ {
       case c ~ _ ~ p1 ~ _ ~ p2 => ITE(c, p1, p2)
     } |
-    "wait"~>notlinP ^^ {
+    ("wait"~>notlinP)<~";" ^^ {
       time => Atomic(Nil,DiffEqs(Nil,For(time)))
     }|
     atomP
@@ -111,10 +112,10 @@ object Parser extends RegexParsers {
   // Acrescentei a possibilidade de haver algo assim: v:=0; for 0 
   // Assim ele não dá erro caso apanhe algo assim e trata isso devidamente
   lazy val atomP: Parser[Atomic] =
-    identifier ~ ":=" ~ notlinP ^^ {
+    (identifier ~ ":=" ~ notlinP)<~";" ^^ {
       case v ~ _ ~ l => Atomic(List(Assign(VarNotLin(v), l)),DiffEqs(Nil,For(ValueNotLin(0))))
     } |
-    diffEqsP ~ opt(durP) ^^ {
+    (diffEqsP ~ opt(durP))<~";" ^^ {
       case des ~ d => Atomic(Nil,des & d.getOrElse(Forever))
     } |
     durP ^^{
