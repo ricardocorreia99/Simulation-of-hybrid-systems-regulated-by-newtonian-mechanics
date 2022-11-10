@@ -2,6 +2,7 @@ package hprog.frontend.solver
 
 import hprog.ast.SymbolicExpr.SyExprAll
 import hprog.ast._
+import hprog.frontend.Eval
 import Syntax._
 import hprog.frontend.CommonTypes.{Point, Solution, SySolution, Valuation}
 
@@ -23,7 +24,7 @@ class SimpleSolver extends Solver {
 
   override def solveSymb(eqs:List[DiffEq]): SySolution = Map()
   override def solveSymb(expr: SyExprAll): SyExprAll = expr
-  override def solveSymb(cond: Cond, v:Valuation): Boolean = true
+  override def solveSymb(cond: Cond, v:Valuation): Boolean = Eval(Eval(v),cond)
 
 //  override def solveSymb(eqs: List[DiffEq]): SageSolution = Map()
 
@@ -44,7 +45,7 @@ class SimpleSolver extends Solver {
       def getDummy(v:String): Double = (vars.indexOf(v),vars.indexOf("_"+v)) match {
         case (_,-1) => 0.0
         case (_,_)  =>
-          //          println(s"dummy($v) = ${mtx(i)(j)}")
+          //println(s"dummy($v) = ${mtx(i)(j)}")
           //mtx(i)(j)
           1
       }
@@ -52,6 +53,8 @@ class SimpleSolver extends Solver {
       val input2  = vars.map(input ++ dummies)
       //      println("input with dummies: "+input2.mkString(","))
       val list = sol1(input2, t)
+      //      println(s"solving: got list ${list.size}")
+//      println(s"solving: returning ${(vars zip list).toMap -- vars.map("_"+_)}")
       (vars zip list).toMap -- vars.map("_"+_)
     }
     sol
