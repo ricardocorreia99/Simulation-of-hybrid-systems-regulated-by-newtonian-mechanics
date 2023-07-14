@@ -1,4 +1,4 @@
-# lince_tool
+# lince tool
 Hybrid programs orchestrate classic computation with physical processes in order to reach 
 prescribed goals. Examples of this range from small medical devices, such as pacemakers and 
 insulin pumps, to autonomous vehicles and district-wide electric/water grids. Their rapid 
